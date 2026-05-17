@@ -1,40 +1,40 @@
-# ---- Stage 1: Build dependencies ----
-FROM python:3.11-slim AS builder
+# Stage 1: Build stage
+FROM python:3.11-alpine AS builder
 
 WORKDIR /app
-
-# Install build tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
-    libpq-dev \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
+# Install build dependencies for psycopg2 and other packages
+RUN apk update && \
+    apk add --no-cache postgresql-dev gcc python3-dev musl-dev && \
+    pip install --no-cache-dir --user -r requirements.txt
 
-# ---- Stage 2: Production image ----
-FROM python:3.11-slim
+# Stage 2: Run stage
+FROM python:3.11-alpine
 
 WORKDIR /app
 
-# Install runtime dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq5 \
-    && rm -rf /var/lib/apt/lists/*
+# Install runtime dependencies for psycopg2
+RUN apk update && apk add --no-cache libpq
 
-# Copy installed packages
-COPY --from=builder /install /usr/local
+# Copy installed packages from builder
+COPY --from=builder /root/.local /root/.local
+ENV PATH=/root/.local/bin:$PATH
 
 # Copy project files
 COPY . .
 
 # Environment variables
+ENV FLASK_APP=run.py
+ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
 # Expose port
 EXPOSE 5000
 
-# Run app using gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "run:app"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s \
+  CMD wget --quiet --tries=1 --spider http://localhost:5000/health || exit 1
+
+# Run Gunicorn
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "run:app"]
