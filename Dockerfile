@@ -1,5 +1,5 @@
 # Stage 1: Build stage
-FROM python:3.11-alpine AS builder
+FROM python:3.14-alpine AS builder
 
 WORKDIR /app
 COPY requirements.txt .
@@ -10,7 +10,7 @@ RUN apk update && \
     pip install --no-cache-dir --user -r requirements.txt
 
 # Stage 2: Run stage
-FROM python:3.11-alpine
+FROM python:3.14-alpine
 
 WORKDIR /app
 
