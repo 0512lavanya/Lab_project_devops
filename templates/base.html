@@ -9,11 +9,11 @@
 <body>
     <nav class="navbar">
         <div class="container nav-inner">
-            <a href="{{ url_for('home') }}" class="brand">DevOps<span>Web</span></a>
+            <a href="{{ url_for('main.index') }}" class="brand">DevOps<span>Web</span></a>
             <ul class="nav-links">
-                <li><a href="{{ url_for('home') }}">Home</a></li>
-                <li><a href="{{ url_for('login') }}">Login</a></li>
-                <li><a href="{{ url_for('health') }}" class="health-link" target="_blank" rel="noopener">Health</a></li>
+                <li><a href="{{ url_for('main.index') }}">Home</a></li>
+                <li><a href="{{ url_for('main.login') }}">Login</a></li>
+                <li><a href="/health" class="health-link" target="_blank" rel="noopener">Health</a></li>
             </ul>
         </div>
     </nav>
